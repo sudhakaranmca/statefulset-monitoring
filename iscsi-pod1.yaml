@@ -1,0 +1,32 @@
+apiVersion: v1
+
+kind: Pod
+
+metadata:
+
+  name: nginx1
+  labels:
+    type: statefulset
+    app: ai
+
+spec:
+
+  containers:
+
+  - name: nginx1
+
+    image: centos/systemd
+
+    volumeMounts:
+
+    - mountPath: "/tmp"
+
+      name: myvolume1
+
+  volumes:
+
+  - name: myvolume1
+
+    persistentVolumeClaim:
+
+      claimName: iscsipvc1

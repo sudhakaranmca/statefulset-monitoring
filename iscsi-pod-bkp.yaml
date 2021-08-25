@@ -1,0 +1,33 @@
+apiVersion: v1
+
+kind: Pod
+
+metadata:
+
+  name: nginx
+
+  labels:
+    type: statefulset
+    app: ai
+
+spec:
+
+  containers:
+
+  - name: nginx
+
+    image: nginx
+
+    volumeMounts:
+
+    - mountPath: "/var/www/html"
+
+      name: myvolume
+
+  volumes:
+
+  - name: myvolume
+
+    persistentVolumeClaim:
+
+      claimName: iscsipvc
