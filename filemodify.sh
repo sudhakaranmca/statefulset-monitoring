@@ -82,6 +82,52 @@ file_consistency_check()
      fi
 }
 
+
+file_sync()
+{
+     previous=""
+     previous_wc=0
+
+     flag=0
+
+     for pod in $podlist
+     do
+        present=`kubectl exec $pod md5sum /tmp/test`
+        present=`echo $present | awk '{print $1}'`
+        present_wc=`kubectl exec $pod wc /tmp/test`
+        present_wc=`echo $present_wc | awk '{print $1}'`
+        
+        # "-n" flag in if condition is used to check the not null string and "-a" is used for AND condition 
+
+        if [ -n "$previous" -a "$present" != "$previous" ]
+        then
+             flag=1
+             echo " not consistent pod name is $pod and its hash value is $present"
+             echo " $pod;$present;$present_wc" >>hash.txt
+             not_with_sync=$pod
+        else 
+             echo " pod name is $pod and its hash value is $present"
+             echo " $pod;$present;$present_wc" >>hash.txt
+             with_sync=$pod
+        fi
+
+        previous=$present
+
+     done
+
+     if [ $flag -eq 1 ]
+     then
+         echo " Files across pods are not in consistent "
+          kubectl cp $with_sync:/tmp/test ./sync
+          kubectl cp sync $not_with_sync:/tmp/test
+     else
+         echo " Files across pods are in consistent state"
+     fi
+
+
+}
+
+
 # SHELL SCRIPT ENTRY POINT 
 
 echo " number of arguments passed in command line arguments is $# "
@@ -103,8 +149,10 @@ fi
 
 for pod in $podlist
 do
-   #echo " pod name is $pod "
-   file_notification $pod 
+   echo " pod name is $pod "
+#   file_notification $pod 
 done
 
 file_consistency_check
+
+#file_sync
